@@ -8,7 +8,7 @@ def init_filter(d,mi,mo,stride):
 
 class ConvBlock:
 
-	def __init__(self,mi,fm_sizes,stride=1,d=3,activation=None):
+	def __init__(self,f_in,fm_sizes,stride=1,d=3,activation=None):
 		assert(len(fm_sizes) == 3)
 
 		if activation is None:
@@ -17,7 +17,7 @@ class ConvBlock:
 			self.activation = activation
 		#main brach
 		#conv->bn->f()--->conv->bn->f()--->conv-->bn
-		self.conv1 = ConvLayer(d,mi,fm_sizes[0],stride)
+		self.conv1 = ConvLayer(d,f_in,fm_sizes[0],stride)
 		self.bn1=BatchNormLayer(fm_sizes[0])
 		self.conv2 = ConvLayer(d,fm_sizes[0],fm_sizes[1],stride)
 		self.bn2=BatchNormLayer(fm_sizes[1])
@@ -26,7 +26,7 @@ class ConvBlock:
 
 		#skip
 		#Conv-->BN
-		self.convs=ConvLayer(d,mi,fm_sizes[2],stride)
+		self.convs=ConvLayer(d,f_in,fm_sizes[2],stride)
 		self.bns=BatchNormLayer(fm_sizes[2])
 
 		self.layers = [

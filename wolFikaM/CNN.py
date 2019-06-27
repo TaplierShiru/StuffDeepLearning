@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 from sklearn.utils import shuffle
-from utils import accuracy_rate, sparse_cross_entropy
+from utils import accuracy_rate, sparse_cross_entropy, draw_functions
 
 EPSILON=np.float32(1e-37)
 
@@ -42,7 +42,7 @@ class Model:
 			X = layer.forward(X,isTrain=isTrain)
 		return X
 	
-	def fit_pure(self,Xtrain,Ytrain,Xtest,Ytest, optimizer= None, epoch=1,test_period=1):
+	def fit_pure(self,Xtrain,Ytrain,Xtest,Ytest, optimizer= None, epoch=1,test_period=1,show_figure=False):
 
 		assert(optimizer is not None)
 		assert(self.session is not None)
@@ -81,7 +81,7 @@ class Model:
 						train_op,
 						feed_dict={self.X:Xbatch,self.sparse_out:Ybatch},
 					)
-										# Use exponential decay for calculating loss and error
+					# Use exponential decay for calculating loss and error
 					train_cost = 0.99 * train_cost + 0.01 * train_cost_batch
 					train_accur_batch = accuracy_rate(np.argmax(y_ish, axis=1), Ybatch)
 					train_accuracy = 0.99 * train_accuracy + 0.01 * train_accur_batch
@@ -111,7 +111,11 @@ class Model:
 
 					print('\tEpoch:', (m+1), 'Train accuracy: {:0.4f}'.format(train_accuracy), 'Train cost: {:0.5f}'.format(train_cost),
 					  'Test accuracy: {:0.4f}'.format(test_accuracy), 'Test cost: {:0.5f}'.format(test_cost))
-					
+					#need add plot by pyplot (i will understand!)
+			
+			draw_functions({'Train cost':train_costs, 'Test cost':test_costs})
+			draw_functions({'Train accuracy':train_accuracys,'Test accuracy':test_accuracys})
+
 		except Exception as ex:
 			print(ex)
 			iterator.close()

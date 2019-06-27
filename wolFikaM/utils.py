@@ -1,6 +1,7 @@
 import numpy as np
 from tensorflow.keras.datasets import mnist as MN
 from tensorflow.keras.datasets import cifar10
+import matplotlib.pyplot as plt
 
 def relu(a):
 	return a * ( a > 0)
@@ -27,3 +28,24 @@ def cifar10_test():
 
 def sparse_cross_entropy(Y, T):
     return -np.mean(np.log(Y[np.arange(Y.shape[0]), T]))
+
+
+def draw_functions(elem):
+	"""
+	Input are dictionary 
+	
+	Parameters
+	----------
+	(whatDraw,NParray)
+	----------
+
+	----------
+	Output
+	Draw a graph for given values and names
+	----------
+	"""
+	for (name,value) in elem.items():
+		plt.plot(value,label=name)
+	#draw 
+	plt.legend()
+	plt.show()
