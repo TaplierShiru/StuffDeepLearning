@@ -171,8 +171,8 @@ class Flatten(Layer):
 
 class DenseLayer(Layer):
 
-	def __init__(self, input,out):
-		self.W = tf.Variable((np.random.randn(input,out) * np.sqrt(2.0 / input)).astype(np.float32))
+	def __init__(self, inp,out):
+		self.W = tf.Variable((np.random.randn(inp,out) * np.sqrt(2.0 / inp)).astype(np.float32))
 		self.b = tf.Variable(np.zeros(out,dtype=np.float32))
 		self.params = [self.W, self.b]
 

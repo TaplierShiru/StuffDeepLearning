@@ -112,9 +112,9 @@ class Model:
 					print('\tEpoch:', (m+1), 'Train accuracy: {:0.4f}'.format(train_accuracy), 'Train cost: {:0.5f}'.format(train_cost),
 					  'Test accuracy: {:0.4f}'.format(test_accuracy), 'Test cost: {:0.5f}'.format(test_cost))
 					#need add plot by pyplot (i will understand!)
-			
-			draw_functions({'Train cost':train_costs, 'Test cost':test_costs})
-			draw_functions({'Train accuracy':train_accuracys,'Test accuracy':test_accuracys})
+			if show_figure:
+				draw_functions({'Train cost':train_costs, 'Test cost':test_costs})
+				draw_functions({'Train accuracy':train_accuracys,'Test accuracy':test_accuracys})
 
 		except Exception as ex:
 			print(ex)
