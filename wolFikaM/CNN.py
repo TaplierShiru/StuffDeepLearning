@@ -2,7 +2,9 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-
+from tqdm import trange
+from tqdm import tnrange
+import time
 from sklearn.utils import shuffle
 from utils import accuracy_rate, sparse_cross_entropy, draw_functions
 
@@ -67,51 +69,55 @@ class Model:
 			test_costs=[]
 			test_accuracys=[]
 
-			for m in range(epoch):
+			for m in tnrange(epoch,desc='Progress is'):
 				Xtrain, Ytrain = shuffle(Xtrain,Ytrain)
 				train_cost=np.float32(0)
 				train_accuracy=np.float32(0)
-				iterator = range(n_batches)
 
-				for i in tqdm(iterator):
-					Xbatch = Xtrain[i*self.batch_sz:(i+1)*self.batch_sz]
-					Ybatch = Ytrain[i*self.batch_sz:(i+1)*self.batch_sz]
+				with trange(n_batches) as iter:
+					for i in iter:
+						iter.set_description(f'Epoch is {(m+1)} / {epoch}')
 
-					(train_cost_batch,y_ish),_ = self.session.run(
-						train_op,
-						feed_dict={self.X:Xbatch,self.sparse_out:Ybatch},
-					)
-					# Use exponential decay for calculating loss and error
-					train_cost = 0.99 * train_cost + 0.01 * train_cost_batch
-					train_accur_batch = accuracy_rate(np.argmax(y_ish, axis=1), Ybatch)
-					train_accuracy = 0.99 * train_accuracy + 0.01 * train_accur_batch
+						Xbatch = Xtrain[i*self.batch_sz:(i+1)*self.batch_sz]
+						Ybatch = Ytrain[i*self.batch_sz:(i+1)*self.batch_sz]
 
-				# Validating the network on test data
-				if m % test_period == 0:
-					# For test data
-					test_cost = np.float32(0)
-					test_predictions = np.zeros(len(Xtest))
+						(train_cost_batch,y_ish),_ = self.session.run(
+							train_op,
+							feed_dict={self.X:Xbatch,self.sparse_out:Ybatch},
+						)
+						# Use exponential decay for calculating loss and error
+						train_cost = 0.99 * train_cost + 0.01 * train_cost_batch
+						train_accur_batch = accuracy_rate(np.argmax(y_ish, axis=1), Ybatch)
+						train_accuracy = 0.99 * train_accuracy + 0.01 * train_accur_batch
 
-					for k in range(len(Xtest) // self.batch_sz):
-						# Test data
-						Xtestbatch = Xtest[k * self.batch_sz:(k + 1) * self.batch_sz]
-						Ytestbatch = Ytest[k * self.batch_sz:(k + 1) * self.batch_sz]
-						Yish_test_done = self.session.run(Yish_test, feed_dict={self.X: Xtestbatch}) + EPSILON
-						test_cost += sparse_cross_entropy(Yish_test_done, Ytestbatch)
-						test_predictions[k * self.batch_sz:(k + 1) * self.batch_sz] = np.argmax(Yish_test_done, axis=1)
+						# Validating the network on test data
+						if  i == (n_batches - 1) and  m % test_period == 0:
+							# For test data
+							test_cost = np.float32(0)
+							test_predictions = np.zeros(len(Xtest))
 
-					# Collect and print data
-					test_cost = test_cost / (len(Xtest) // self.batch_sz)
-					test_accuracy = accuracy_rate(test_predictions, Ytest)
-					test_accuracys.append(test_accuracy)
-					test_costs.append(test_cost)
+							for k in range(len(Xtest) // self.batch_sz):
+								# Test data
+								Xtestbatch = Xtest[k * self.batch_sz:(k + 1) * self.batch_sz]
+								Ytestbatch = Ytest[k * self.batch_sz:(k + 1) * self.batch_sz]
+								Yish_test_done = self.session.run(Yish_test, feed_dict={self.X: Xtestbatch}) + EPSILON
+								test_cost += sparse_cross_entropy(Yish_test_done, Ytestbatch)
+								test_predictions[k * self.batch_sz:(k + 1) * self.batch_sz] = np.argmax(Yish_test_done, axis=1)
 
-					train_costs.append(train_cost)
-					train_accuracys.append(train_accuracy)
+							# Collect and print data
+							test_cost = test_cost / (len(Xtest) // self.batch_sz)
+							test_accuracy = accuracy_rate(test_predictions, Ytest)
+							test_accuracys.append(test_accuracy)
+							test_costs.append(test_cost)
 
-					print('\tEpoch:', (m+1), 'Train accuracy: {:0.4f}'.format(train_accuracy), 'Train cost: {:0.5f}'.format(train_cost),
-					  'Test accuracy: {:0.4f}'.format(test_accuracy), 'Test cost: {:0.5f}'.format(test_cost))
-					#need add plot by pyplot (i will understand!)
+							train_costs.append(train_cost)
+							train_accuracys.append(train_accuracy)
+
+							iter.set_postfix(Train_accuracy=' {:0.4f}'.format(train_accuracy),Train_cost =' {:0.5f}'.format(train_cost),
+								Test_accuracy =' {:0.4f}'.format(test_accuracy), Test_cost=' {:0.5f}'.format(test_cost))
+
+							#print('\tEpoch:', (m+1), 'Train accuracy: {:0.4f}'.format(train_accuracy), 'Train cost: {:0.5f}'.format(train_cost),
+							#  'Test accuracy: {:0.4f}'.format(test_accuracy), 'Test cost: {:0.5f}'.format(test_cost))
 			if show_figure:
 				draw_functions({'Train cost':train_costs, 'Test cost':test_costs})
 				draw_functions({'Train accuracy':train_accuracys,'Test accuracy':test_accuracys})

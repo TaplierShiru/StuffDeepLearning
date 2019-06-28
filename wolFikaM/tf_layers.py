@@ -14,7 +14,7 @@ def init_filter(d,f_in,f_out,stride):
 	
 class Layer:
 
-	def __init(self):
+	def __init__(self):
 		self.params = []
 
 	def forward(self,X,isTrain=True):
@@ -27,6 +27,7 @@ class Layer:
 class ConvLayer(Layer):
 
 	def __init__(self,d,f_in,f_out,stride=1,padding='SAME'):
+		Layer.__init__(self)
 		self.W = tf.Variable(init_filter(d,f_in,f_out,stride))
 		self.b = tf.Variable(np.zeros(f_out,dtype=np.float32))
 		self.stride=stride
@@ -53,6 +54,7 @@ class ConvLayer(Layer):
 class BatchNormLayer(Layer):
 
 	def __init__(self,D):
+		Layer.__init__(self)
 		self.running_mean=tf.Variable(np.zeros(D,dtype=np.float32),trainable=False)
 		self.running_var=tf.Variable(np.ones(D,dtype=np.float32),trainable=False)
 		self.gamma = tf.Variable(np.ones(D,dtype=np.float32))
@@ -106,28 +108,26 @@ class BatchNormLayer(Layer):
 		op4=self.beta.assign(beta)
 		#self.session.run((op1,op2,op3,op4))
 
-class ActivationLayer:
+class ActivationLayer(Layer):
 	def __init__(self,activation=tf.nn.relu):
+		Layer.__init__(self)
 		self.activation=activation
 
 	def forward(self, X,isTrain=True):
 		return self.activation(X)
 
-	def get_params(self):
-		return []
 
 class ActivLeakyRelu(Layer):
 	def __init__(self,alpha=0.2):
+		Layer.__init__(self)
 		self.alpha = alpha
 
 	def forward(self,X,isTrain=True):
 		return tf.nn.leaky_relu(X,alpha=self.alpha)
 
-	def get_params(self):
-		return []
-
 class MaxPoolLayer(Layer):
 	def __init__(self, dim=2,strides=2,padding='SAME'):
+		Layer.__init__(self)
 		self.dim = dim
 		self.strides = strides
 		self.padding=padding
@@ -140,12 +140,12 @@ class MaxPoolLayer(Layer):
 		  padding=self.padding,
 		)
 
-	def get_params(self):
-		return []
+
 
 class AvgPool(Layer):
 
 	def __init__(self, ksize=1,padding='SAME',strides=1):
+		Layer.__init__(self)
 		self.ksize = ksize
 		self.strides = strides
 		self.padding=padding
@@ -158,16 +158,13 @@ class AvgPool(Layer):
 			padding=self.padding,
 		)
 
-	def get_params(self):
-		return []
-
 class Flatten(Layer):
+
+	def __init__(self):
+		Layer.__init__(self)
 
 	def forward(self,X,isTrain=True):
 		return tf.contrib.layers.flatten(X)
-
-	def get_params(self):
-		return []
 
 class DenseLayer(Layer):
 
